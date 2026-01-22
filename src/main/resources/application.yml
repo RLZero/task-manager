@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: task-app
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/taskdb
+    username: zero
+    password: zeropass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
