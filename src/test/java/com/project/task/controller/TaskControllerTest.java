@@ -1,0 +1,76 @@
+package com.project.task.controller;
+
+import com.project.task.domain.CreateTaskRequest;
+import com.project.task.domain.dto.CreateTaskRequestDto;
+import com.project.task.domain.dto.TaskDto;
+import com.project.task.domain.entity.Task;
+import com.project.task.domain.entity.TaskPriority;
+import com.project.task.domain.mapper.TaskMapper;
+import com.project.task.service.TaskService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.assertj.MockMvcTester;
+
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.Mockito.when;
+
+@WebMvcTest(TaskController.class)
+class TaskControllerTest {
+
+    @Autowired
+    private MockMvcTester mockMvc;
+
+    @MockitoBean
+    private TaskService taskService;
+
+    @MockitoBean
+    private TaskMapper taskMapper;
+
+    @Test
+    public void shouldCreateTaskSuccessfully() {
+
+        CreateTaskRequestDto taskRequestDto = new CreateTaskRequestDto(
+                "Redesign Website",
+                "Update the company website with a new design",
+                TaskPriority.LOW);
+
+        CreateTaskRequest taskRequest = new CreateTaskRequest(
+                "Redesign Website",
+                "Update the company website with a new design",
+                TaskPriority.LOW);
+
+        Task task = Task.create(
+                "Redesign Website",
+                "Update the company website with a new design",
+                TaskPriority.LOW);
+
+        TaskDto taskDto = new TaskDto(task.getId(), task.getTitle(), task.getDescription(), task.getPriority(), task.getStatus());
+
+        when(taskMapper.fromDto(taskRequestDto)).thenReturn(taskRequest);
+        when(taskService.createTask(taskRequest)).thenReturn(task);
+        when(taskMapper.toDto(task)).thenReturn(taskDto);
+
+        String requestBody = """
+                        {
+                            "title": "Redesign Website",
+                            "description": "Update the company website with a new design",
+                            "priority": "LOW"
+                        }
+                        """;
+
+        var result = mockMvc.post()
+                .uri("/api/v1/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+
+        assertThat(result).hasStatus(HttpStatus.CREATED);
+        assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Redesign Website");
+        assertThat(result).bodyJson().extractingPath("$.description").isEqualTo("Update the company website with a new design");
+        assertThat(result).bodyJson().extractingPath("$.priority").isEqualTo(TaskPriority.LOW.toString());
+    }
+
+}
