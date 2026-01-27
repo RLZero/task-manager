@@ -1,5 +1,10 @@
 package com.project.task.controller;
 
+import com.project.task.domain.CreateTaskRequest;
+import com.project.task.domain.entity.TaskPriority;
+import com.project.task.repository.TaskRepository;
+import com.project.task.service.TaskService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
@@ -17,10 +22,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 @AutoConfigureRestTestClient
+
 public class TaskControllerIT {
 
     @Autowired
     private RestTestClient restTestClient;
+
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
+    private TaskService taskService;
 
     @Container
     @ServiceConnection
@@ -30,6 +42,11 @@ public class TaskControllerIT {
     void connectionEstablished() {
         assertThat(postgres.isCreated()).isTrue();
         assertThat(postgres.isRunning()).isTrue();
+    }
+
+    @BeforeEach
+    public void cleanDB() {
+        taskRepository.deleteAll();
     }
 
     @Test
@@ -54,6 +71,36 @@ public class TaskControllerIT {
                 .jsonPath("$.title").isEqualTo("Redesign Website")
                 .jsonPath("$.description").isEqualTo("Update the company website with a new design")
                 .jsonPath("$.priority").isEqualTo("LOW");
+    }
+
+    @Test
+    public void shouldReturnAllTasksSuccessfully() {
+        CreateTaskRequest first = new CreateTaskRequest(
+                "First Task",
+                "First task description",
+                TaskPriority.MEDIUM);
+
+        CreateTaskRequest second = new CreateTaskRequest(
+                "Second Task",
+                "Second task description",
+                TaskPriority.HIGH);
+
+        taskService.createTask(first);
+        taskService.createTask(second);
+
+        restTestClient.get()
+                .uri("/api/v1/tasks")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$[0].id").isNotEmpty()
+                .jsonPath("$[0].title").isEqualTo("First Task")
+                .jsonPath("$[0].description").isEqualTo("First task description")
+                .jsonPath("$[0].priority").isEqualTo("MEDIUM")
+                .jsonPath("$[1].id").isNotEmpty()
+                .jsonPath("$[1].title").isEqualTo("Second Task")
+                .jsonPath("$[1].description").isEqualTo("Second task description")
+                .jsonPath("$[1].priority").isEqualTo("HIGH");
     }
 
     @Test

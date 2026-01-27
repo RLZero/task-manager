@@ -15,7 +15,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
+import java.util.List;
+
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
 @WebMvcTest(TaskController.class)
@@ -71,6 +74,31 @@ class TaskControllerTest {
         assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Redesign Website");
         assertThat(result).bodyJson().extractingPath("$.description").isEqualTo("Update the company website with a new design");
         assertThat(result).bodyJson().extractingPath("$.priority").isEqualTo(TaskPriority.LOW.toString());
+    }
+
+    @Test
+    public void shouldReturnAllTask() {
+        Task firstTask = Task.create(
+                "firstTask",
+                "first task description",
+                TaskPriority.LOW);
+
+        Task secondTask = Task.create(
+                "second Task",
+                "second task description",
+                TaskPriority.MEDIUM);
+
+        List<Task> tasks = List.of(firstTask, secondTask);
+
+        given(taskService.getAllTasks()).willReturn(tasks);
+
+        mockMvc.get()
+            .uri("/api/v1/tasks")
+            .contentType(MediaType.APPLICATION_JSON)
+            .assertThat()
+            .hasStatusOk()
+            .bodyJson().extractingPath("$").isNotEmpty();
+
     }
 
 }

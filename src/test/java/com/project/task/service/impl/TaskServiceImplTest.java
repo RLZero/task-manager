@@ -10,8 +10,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,7 +26,6 @@ class TaskServiceImplTest {
 
     @Test
     void shouldCreateTaskWhenRequestIsValid() {
-
         CreateTaskRequest taskRequest = new CreateTaskRequest(
                 "Redesign Website",
                 "Update the company website with a new design",
@@ -46,6 +46,27 @@ class TaskServiceImplTest {
         assertEquals(TaskPriority.MEDIUM, result.getPriority());
 
         verify(taskRepository, times(1)).save(any(Task.class));
+    }
 
+    @Test
+    void shouldReturnALlTasks() {
+        Task firstTask = Task.create(
+                "firstTask",
+                "first task description",
+                TaskPriority.LOW);
+
+        Task secondTask = Task.create(
+                "second Task",
+                "second task description",
+                TaskPriority.MEDIUM);
+
+        List<Task> tasks = List.of(firstTask, secondTask);
+
+        when(taskRepository.findAll()).thenReturn(tasks);
+
+        List<Task> result = taskService.getAllTasks();
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(taskRepository, times(1)).findAll();
     }
 }

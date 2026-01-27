@@ -6,6 +6,8 @@ import com.project.task.repository.TaskRepository;
 import com.project.task.service.TaskService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class TaskServiceImpl implements TaskService {
 
@@ -24,5 +26,10 @@ public class TaskServiceImpl implements TaskService {
                 request.priority());
 
         return taskRepository.save(task);
+    }
+
+    @Override
+    public List<Task> getAllTasks() {
+        return taskRepository.findAll();
     }
 }
