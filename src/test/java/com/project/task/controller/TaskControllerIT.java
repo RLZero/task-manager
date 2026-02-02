@@ -17,6 +17,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -197,5 +199,50 @@ public class TaskControllerIT {
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.error").isEqualTo("Description must not exceed 1000 characters.");
+    }
+
+    @Test
+    public void shouldDeleteTaskSuccessfully() {
+        CreateTaskRequest request = new CreateTaskRequest(
+                "Task to be deleted",
+                "This task will be deleted in the test",
+                TaskPriority.MEDIUM);
+
+        Task createdTask = taskService.createTask(request);
+
+        restTestClient.delete()
+                .uri("/api/v1/tasks/%s".formatted(createdTask.getId()))
+                .exchange()
+                .expectStatus()
+                .isNoContent();
+    }
+
+    @Test
+    public void shouldReturn404WhenDeletingNonExistantTask() {
+
+        UUID taskId = UUID.randomUUID();
+
+        restTestClient.delete()
+                .uri("/api/v1/tasks/%s".formatted(taskId))
+                .exchange()
+                .expectStatus()
+                .isNotFound()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("Task with id '%s' does not exist".formatted(taskId));
+    }
+
+    @Test
+    public void shouldReturn400WhenDeletingWithInvalidUUID() {
+
+        String invalidUUID = "invalid-uuid";
+
+        restTestClient.delete()
+                .uri("/api/v1/tasks/%s".formatted(invalidUUID))
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody()
+                .jsonPath("$.error")
+                .isEqualTo("Invalid UUID format. Expected format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
     }
 }

@@ -42,4 +42,12 @@ public class TaskServiceImpl implements TaskService {
         task.updateTask(request.title(), request.description(), request.status(), request.priority());
         return taskRepository.save(task);
     }
+
+    @Override
+    public void deleteTask(UUID taskId) {
+        if(!taskRepository.existsById(taskId)) {
+            throw new TaskNotFoundException(taskId);
+        }
+        taskRepository.deleteById(taskId);
+    }
 }

@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.util.UUID;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -28,5 +31,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TaskNotFoundException.class)
     public ResponseEntity<ErrorDto> handleTaskNotFoundException(Exception exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(exception.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorDto> handleTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+        if (exception.getRequiredType() == UUID.class) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ErrorDto("Invalid UUID format. Expected format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"));
+        }
+
+        return ResponseEntity.badRequest().body(new ErrorDto("Invalid request parameter"));
     }
 }

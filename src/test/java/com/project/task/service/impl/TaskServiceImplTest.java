@@ -5,6 +5,7 @@ import com.project.task.domain.UpdateTaskRequest;
 import com.project.task.domain.entity.Task;
 import com.project.task.domain.entity.TaskPriority;
 import com.project.task.domain.entity.TaskStatus;
+import com.project.task.exception.TaskNotFoundException;
 import com.project.task.repository.TaskRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -102,5 +103,25 @@ class TaskServiceImplTest {
 
         verify(taskRepository, times(1)).findById(taskId);
         verify(taskRepository, times(1)).save(task);
+    }
+
+    @Test
+    void shouldDeleteTask() {
+        UUID uuid = UUID.randomUUID();
+
+        when(taskRepository.existsById(uuid)).thenReturn(true);
+        taskService.deleteTask(uuid);
+
+        verify(taskRepository, times(1)).deleteById(uuid);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingNonExistingTask() {
+        UUID uuid = UUID.randomUUID();
+
+        when(taskRepository.existsById(uuid)).thenReturn(false);
+
+        assertThrows(TaskNotFoundException.class, () -> taskService.deleteTask(uuid));
+        verify(taskRepository, never()).deleteById(uuid);
     }
 }

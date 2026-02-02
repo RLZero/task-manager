@@ -137,4 +137,14 @@ class TaskControllerTest {
                 .bodyJson().extractingPath("$.id").isEqualTo(taskId.toString());
     }
 
+    @Test
+    void shouldDeleteTaskById() {
+        UUID taskId = UUID.randomUUID();
+
+        mockMvc.delete()
+                .uri("/api/v1/tasks/%s".formatted(taskId))
+                .assertThat()
+                .hasStatus(HttpStatus.NO_CONTENT);
+    }
+
 }
