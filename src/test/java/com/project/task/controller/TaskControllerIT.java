@@ -1,6 +1,7 @@
 package com.project.task.controller;
 
 import com.project.task.domain.CreateTaskRequest;
+import com.project.task.domain.entity.Task;
 import com.project.task.domain.entity.TaskPriority;
 import com.project.task.repository.TaskRepository;
 import com.project.task.service.TaskService;
@@ -101,6 +102,38 @@ public class TaskControllerIT {
                 .jsonPath("$[1].title").isEqualTo("Second Task")
                 .jsonPath("$[1].description").isEqualTo("Second task description")
                 .jsonPath("$[1].priority").isEqualTo("HIGH");
+    }
+
+    @Test
+    public void shouldUpdateTaskSuccessfully() {
+        CreateTaskRequest request = new CreateTaskRequest(
+                "Initial Task",
+                "Initial task description",
+                TaskPriority.LOW);
+
+        Task createdTask = taskService.createTask(request);
+
+        String requestBody = """
+                {
+                    "title": "Updated Task",
+                    "description": "Updated task description",
+                    "status": "COMPLETE",
+                    "priority": "HIGH"
+                }
+                """;
+
+        restTestClient.put()
+                .uri("/api/v1/tasks/%s".formatted(createdTask.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(requestBody)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(createdTask.getId().toString())
+                .jsonPath("$.title").isEqualTo("Updated Task")
+                .jsonPath("$.description").isEqualTo("Updated task description")
+                .jsonPath("$.status").isEqualTo("COMPLETE")
+                .jsonPath("$.priority").isEqualTo("HIGH");
     }
 
     @Test

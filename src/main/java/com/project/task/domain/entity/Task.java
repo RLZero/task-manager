@@ -80,6 +80,13 @@ public class Task {
                 '}';
     }
 
+    public void updateTask(String title, String description, TaskStatus status, TaskPriority priority) {
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.priority = priority;
+    }
+
     public static Task create(String title, String description, TaskPriority priority) {
         return new Task(
                 title,

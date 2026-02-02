@@ -1,8 +1,10 @@
 package com.project.task.service.impl;
 
 import com.project.task.domain.CreateTaskRequest;
+import com.project.task.domain.UpdateTaskRequest;
 import com.project.task.domain.entity.Task;
 import com.project.task.domain.entity.TaskPriority;
+import com.project.task.domain.entity.TaskStatus;
 import com.project.task.repository.TaskRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -68,5 +72,35 @@ class TaskServiceImplTest {
         assertNotNull(result);
         assertEquals(2, result.size());
         verify(taskRepository, times(1)).findAll();
+    }
+
+    @Test
+    void shouldUpdateTaskWhenTaskExists() {
+
+        UUID taskId = UUID.randomUUID();
+        Task task = Task.create(
+                "Redesign Website",
+                "Create a new design for the company",
+                TaskPriority.LOW);
+
+        UpdateTaskRequest updateTaskRequest = new UpdateTaskRequest(
+                "Updated Website",
+                "Update the the design for the company",
+                TaskStatus.COMPLETE,
+                TaskPriority.HIGH
+        );
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(task);
+
+        Task taskUpdated = taskService.updateTask(taskId, updateTaskRequest);
+
+        assertEquals("Updated Website", taskUpdated.getTitle());
+        assertEquals("Update the the design for the company", taskUpdated.getDescription());
+        assertEquals(TaskStatus.COMPLETE, taskUpdated.getStatus());
+        assertEquals(TaskPriority.HIGH, taskUpdated.getPriority());
+
+        verify(taskRepository, times(1)).findById(taskId);
+        verify(taskRepository, times(1)).save(task);
     }
 }
