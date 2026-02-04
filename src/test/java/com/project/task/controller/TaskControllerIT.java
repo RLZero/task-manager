@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Testcontainers
 @AutoConfigureRestTestClient
 @ActiveProfiles("test")
-public class TaskControllerIT {
+class TaskControllerIT {
 
     @Autowired
     private RestTestClient restTestClient;
@@ -56,12 +56,12 @@ public class TaskControllerIT {
     }
 
     @BeforeEach
-    public void cleanDB() {
+    void cleanDB() {
         taskRepository.deleteAll();
     }
 
     @Test
-    public void shouldCreateTaskSuccessfully() {
+    void shouldCreateTaskSuccessfully() {
 
         CreateTaskRequestDto taskRequestDto = new CreateTaskRequestDto(
                 "Redesign Website",
@@ -82,7 +82,7 @@ public class TaskControllerIT {
     }
 
     @Test
-    public void shouldReturnAllTasksSuccessfully() {
+    void shouldReturnAllTasksSuccessfully() {
         CreateTaskRequest first = new CreateTaskRequest(
                 "First Task",
                 "First task description",
@@ -112,7 +112,7 @@ public class TaskControllerIT {
     }
 
     @Test
-    public void shouldUpdateTaskSuccessfully() {
+    void shouldUpdateTaskSuccessfully() {
         CreateTaskRequest request = new CreateTaskRequest(
                 "Initial Task",
                 "Initial task description",
@@ -142,7 +142,7 @@ public class TaskControllerIT {
     }
 
     @Test
-    public void shouldReturn400WhenPriorityIsNullOnCreatingTask() {
+    void shouldReturn400WhenPriorityIsNullOnCreatingTask() {
 
         CreateTaskRequest request = new CreateTaskRequest(
                 "Initial Task",
@@ -160,7 +160,7 @@ public class TaskControllerIT {
     }
 
     @Test
-    public void shouldReturn400WhenTitleIsTooLongOnCreatingTask() {
+    void shouldReturn400WhenTitleIsTooLongOnCreatingTask() {
         String longTitle = "t".repeat(256);
         CreateTaskRequest request = new CreateTaskRequest(
                 longTitle,
@@ -179,7 +179,7 @@ public class TaskControllerIT {
     }
 
     @Test
-    public void shouldReturn400WhenDescriptionIsTooLongOnCreatingTask() {
+    void shouldReturn400WhenDescriptionIsTooLongOnCreatingTask() {
         String longDescription = "d".repeat(1001);
         CreateTaskRequest request = new CreateTaskRequest(
                 "Initial Task",
@@ -197,7 +197,7 @@ public class TaskControllerIT {
     }
 
     @Test
-    public void shouldDeleteTaskSuccessfully() {
+    void shouldDeleteTaskSuccessfully() {
         CreateTaskRequest request = new CreateTaskRequest(
                 "Task to be deleted",
                 "This task will be deleted in the test",
@@ -213,7 +213,7 @@ public class TaskControllerIT {
     }
 
     @Test
-    public void shouldReturn404WhenDeletingNonExistantTask() {
+    void shouldReturn404WhenDeletingNonExistantTask() {
 
         UUID taskId = UUID.randomUUID();
 
@@ -227,7 +227,7 @@ public class TaskControllerIT {
     }
 
     @Test
-    public void shouldReturn400WhenDeletingWithInvalidUUID() {
+    void shouldReturn400WhenDeletingWithInvalidUUID() {
 
         String invalidUUID = "invalid-uuid";
 

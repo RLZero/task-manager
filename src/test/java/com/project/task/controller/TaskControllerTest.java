@@ -44,7 +44,7 @@ class TaskControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    public void shouldCreateTaskSuccessfully() {
+    void shouldCreateTaskSuccessfully() {
 
         CreateTaskRequestDto taskRequestDto = new CreateTaskRequestDto(
                 "Redesign Website",
@@ -79,7 +79,7 @@ class TaskControllerTest {
     }
 
     @Test
-    public void shouldReturnAllTask() {
+    void shouldReturnAllTask() {
         Task firstTask = Task.create(
                 "firstTask",
                 "first task description",
@@ -103,7 +103,7 @@ class TaskControllerTest {
     }
 
     @Test
-    public void shouldUpdateTask() {
+    void shouldUpdateTask() {
         UUID taskId = UUID.randomUUID();
         UpdateTaskRequest updateTaskRequest = new UpdateTaskRequest(
                 "Updated Website",
