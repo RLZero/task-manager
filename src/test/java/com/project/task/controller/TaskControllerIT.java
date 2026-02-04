@@ -1,8 +1,11 @@
 package com.project.task.controller;
 
 import com.project.task.domain.CreateTaskRequest;
+import com.project.task.domain.UpdateTaskRequest;
+import com.project.task.domain.dto.CreateTaskRequestDto;
 import com.project.task.domain.entity.Task;
 import com.project.task.domain.entity.TaskPriority;
+import com.project.task.domain.entity.TaskStatus;
 import com.project.task.repository.TaskRepository;
 import com.project.task.service.TaskService;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +20,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
@@ -38,6 +42,9 @@ public class TaskControllerIT {
     @Autowired
     private TaskService taskService;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Container
     @ServiceConnection
     static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17");
@@ -56,18 +63,15 @@ public class TaskControllerIT {
     @Test
     public void shouldCreateTaskSuccessfully() {
 
-        String requestBody = """
-                {
-                    "title": "Redesign Website",
-                    "description": "Update the company website with a new design",
-                    "priority": "LOW"
-                }
-                """;
+        CreateTaskRequestDto taskRequestDto = new CreateTaskRequestDto(
+                "Redesign Website",
+                "Update the company website with a new design",
+                TaskPriority.LOW);
 
         restTestClient.post()
                 .uri("/api/v1/tasks")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(requestBody)
+                .body(objectMapper.writeValueAsString(taskRequestDto))
                 .exchange()
                 .expectStatus().isCreated()
                 .expectBody()
@@ -116,19 +120,17 @@ public class TaskControllerIT {
 
         Task createdTask = taskService.createTask(request);
 
-        String requestBody = """
-                {
-                    "title": "Updated Task",
-                    "description": "Updated task description",
-                    "status": "COMPLETE",
-                    "priority": "HIGH"
-                }
-                """;
+        UpdateTaskRequest updateTaskRequest = new UpdateTaskRequest(
+                "Updated Task",
+                "Updated task description",
+                TaskStatus.COMPLETE,
+                TaskPriority.HIGH
+        );
 
         restTestClient.put()
                 .uri("/api/v1/tasks/%s".formatted(createdTask.getId()))
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(requestBody)
+                .body(objectMapper.writeValueAsString(updateTaskRequest))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -140,19 +142,17 @@ public class TaskControllerIT {
     }
 
     @Test
-    public void shouldReturn400WhenPriorityIsNull() {
-        String requestBody = """
-                {
-                    "title": "Redesign Website",
-                    "description": "Update the company website with a new design",
-                    "priority": null
-                }
-                """;
+    public void shouldReturn400WhenPriorityIsNullOnCreatingTask() {
+
+        CreateTaskRequest request = new CreateTaskRequest(
+                "Initial Task",
+                "Initial task description",
+                null);
 
         restTestClient.post()
                 .uri("/api/v1/tasks")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(requestBody)
+                .body(objectMapper.writeValueAsString(request))
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
@@ -160,20 +160,17 @@ public class TaskControllerIT {
     }
 
     @Test
-    public void shouldReturn400WhenTitleIsTooLong() {
+    public void shouldReturn400WhenTitleIsTooLongOnCreatingTask() {
         String longTitle = "t".repeat(256);
-        String requestBody = """
-                {
-                    "title": "%s",
-                    "description": "Update the company website with a new design",
-                    "priority": "HIGH"
-                }
-                """.formatted(longTitle);
+        CreateTaskRequest request = new CreateTaskRequest(
+                longTitle,
+                "Initial task description",
+                TaskPriority.HIGH);
 
         restTestClient.post()
                 .uri("/api/v1/tasks")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(requestBody)
+                .body(objectMapper.writeValueAsString(request))
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
@@ -182,20 +179,17 @@ public class TaskControllerIT {
     }
 
     @Test
-    public void shouldReturn400WhenDescriptionIsTooLong() {
+    public void shouldReturn400WhenDescriptionIsTooLongOnCreatingTask() {
         String longDescription = "d".repeat(1001);
-        String bodyRequest = """
-                {
-                    "title": "Redesign Website",
-                    "description": "%s",
-                    "priority": "MEDIUM"
-                }
-                """.formatted(longDescription);
+        CreateTaskRequest request = new CreateTaskRequest(
+                "Initial Task",
+                longDescription,
+                TaskPriority.HIGH);
 
         restTestClient.post()
                 .uri("/api/v1/tasks")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(bodyRequest)
+                .body(objectMapper.writeValueAsString(request))
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()

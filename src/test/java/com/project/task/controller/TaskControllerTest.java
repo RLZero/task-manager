@@ -41,7 +41,7 @@ class TaskControllerTest {
     private TaskMapper taskMapper;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @Test
     public void shouldCreateTaskSuccessfully() {
