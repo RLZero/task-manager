@@ -106,6 +106,25 @@ class TaskServiceImplTest {
     }
 
     @Test
+    void shouldThrowTaskNotFoundExceptionWhenUpdatingNonExistingTask() {
+        UUID taskId = UUID.randomUUID();
+
+        UpdateTaskRequest updateTaskRequest = new UpdateTaskRequest(
+                "Updated Website",
+                "Update the the design for the company",
+                TaskStatus.COMPLETE,
+                TaskPriority.HIGH
+        );
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.empty());
+
+        assertThrows(TaskNotFoundException.class, () -> taskService.updateTask(taskId, updateTaskRequest));
+
+        verify(taskRepository, times(1)).findById(taskId);
+        verify(taskRepository, never()).save(any(Task.class));
+    }
+
+    @Test
     void shouldDeleteTask() {
         UUID uuid = UUID.randomUUID();
 

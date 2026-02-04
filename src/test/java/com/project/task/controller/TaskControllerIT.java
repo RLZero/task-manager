@@ -142,6 +142,28 @@ class TaskControllerIT {
     }
 
     @Test
+    void shouldReturn404WhenUpdatingNonExistantTask() {
+
+        UUID taskId = UUID.randomUUID();
+
+        UpdateTaskRequest updateTaskRequest = new UpdateTaskRequest(
+                "Updated Task",
+                "Updated task description",
+                TaskStatus.COMPLETE,
+                TaskPriority.HIGH
+        );
+
+        restTestClient.put()
+                .uri("/api/v1/tasks/%s".formatted(taskId))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(objectMapper.writeValueAsString(updateTaskRequest))
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("Task with id '%s' does not exist".formatted(taskId));
+    }
+
+    @Test
     void shouldReturn400WhenPriorityIsNullOnCreatingTask() {
 
         CreateTaskRequest request = new CreateTaskRequest(
